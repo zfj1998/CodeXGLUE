@@ -65,17 +65,19 @@ def read_examples(filename):
             line=line.strip()
             js=json.loads(line)
             if 'idx' not in js:
-                js['idx']=idx
+                js['idx']=idx # idx seems not appear in codesearchnet data
+            # restore code str with white space added
             code=' '.join(js['code_tokens']).replace('\n',' ')
+            # restore stripped code str, strip function will clean the head and tail
             code=' '.join(code.strip().split())
             nl=' '.join(js['docstring_tokens']).replace('\n','')
-            nl=' '.join(nl.strip().split())            
+            nl=' '.join(nl.strip().split())
             examples.append(
                 Example(
                         idx = idx,
                         source=code,
                         target = nl,
-                        ) 
+                    )
             )
     return examples
 
@@ -96,7 +98,6 @@ class InputFeatures(object):
         self.source_mask = source_mask
         self.target_mask = target_mask       
         
-
 
 def convert_examples_to_features(examples, tokenizer, args,stage=None):
     features = []
@@ -285,7 +286,7 @@ def main():
         all_source_ids = torch.tensor([f.source_ids for f in train_features], dtype=torch.long)
         all_source_mask = torch.tensor([f.source_mask for f in train_features], dtype=torch.long)
         all_target_ids = torch.tensor([f.target_ids for f in train_features], dtype=torch.long)
-        all_target_mask = torch.tensor([f.target_mask for f in train_features], dtype=torch.long)    
+        all_target_mask = torch.tensor([f.target_mask for f in train_features], dtype=torch.long)
         train_data = TensorDataset(all_source_ids,all_source_mask,all_target_ids,all_target_mask)
         
         if args.local_rank == -1:
@@ -509,13 +510,5 @@ def main():
             logger.info("  %s = %s "%("bleu-4",str(dev_bleu)))
             logger.info("  "+"*"*20)    
 
-
-
-                            
-
-                
-                
 if __name__ == "__main__":
     main()
-
-
